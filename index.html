@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Digital Love Effect</title>
+    <style>
+        /* --- CSS STYLING --- */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Kontainer Utama untuk Teks di Tengah */
+        #overlay-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            color: #ffffff;
+            pointer-events: none; /* Supaya tidak mengganggu klik */
+        }
+
+        /* Gaya Teks Digital Besar (Gaya Dot Matrix) */
+        .digital-text {
+            font-size: 5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff1493;
+            letter-spacing: 5px;
+            display: none;
+            animation: pulse 1s infinite alternate;
+        }
+
+        /* Efek Berkedip untuk Teks Akhir dan Hati */
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* Gaya Khusus untuk Animasi Hati Akhir */
+        .heart-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        .heart-shape {
+            font-size: 8rem;
+            color: #ff1493;
+            filter: drop-shadow(0 0 15px #ff69b4);
+            margin-bottom: 10px;
+        }
+
+        .love-message {
+            font-size: 2rem;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff1493;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas untuk Background Efek Matrix -->
+    <canvas id="matrixCanvas"></canvas>
+
+    <!-- Kontainer Teks dan Animasi -->
+    <div id="overlay-container">
+        <!-- Tahap 1: Hitung Mundur -->
+        <div id="countdown" class="digital-text">3</div>
+        
+        <!-- Tahap 2: Pesan Berjalan -->
+        <div id="msg-you" class="digital-text">You</div>
+        <div id="msg-are" class="digital-text">Are</div>
+        <div id="msg-my" class="digital-text">My</div>
+        <div id="msg-love" class="digital-text">Love</div>
+
+        <!-- Tahap 3: Hati & Pesan Akhir -->
+        <div id="final-heart" class="heart-container">
+            <div class="heart-shape">❤️</div>
+            <div class="love-message">I Love You Sayang ~</div>
+        </div>
+    </div>
+
+    <!-- --- JAVASCRIPT LOGIC --- -->
+    <script>
+        // --- 1. CONFIG BACKGROUND MATRIX ---
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Karakter digital yang mengalir (menggunakan angka biner & romawi/acak mirip video)
+        const katakana = "010101010101010101010101010101001100XXYYZZ";
+        const alphabet = katakana.split("");
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+
+        const rainDrops = [];
+        for (let x = 0; x < columns; x++) {
+            rainDrops[x] = 1;
+        }
+
+        function drawMatrix() {
+            // Memberikan efek shadow/trail hitam transparan
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Warna teks matrix (merah muda/pink keunguan seperti di video)
+            ctx.fillStyle = '#ff1493'; 
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet[Math.floor(Math.random() * alphabet.length)];
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        }
+
+        // Jalankan background matrix secara konstan
+        setInterval(drawMatrix, 30);
+
+        // Menyesuaikan ukuran jika window browser di-resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+
+        // --- 2. LOGIKA ANIMASI SEKUENSAL (TIMELINE CHANGER) ---
+        const countdownEl = document.getElementById('countdown');
+        const msgYou = document.getElementById('msg-you');
+        const msgAre = document.getElementById('msg-are');
+        const msgMy = document.getElementById('msg-my');
+        const msgLove = document.getElementById('msg-love');
+        const finalHeart = document.getElementById('final-heart');
+
+        // Fungsi pembantu untuk delay waktu (milidetik)
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function startAnimationSequence() {
+            // --- HITUNG MUNDUR (3, 2, 1) ---
+            await sleep(1000);
+            countdownEl.style.display = 'block'; // Tampilkan '3'
+            
+            await sleep(1000);
+            countdownEl.innerText = '2';         // Ganti jadi '2'
+            
+            await sleep(1000);
+            countdownEl.innerText = '1';         // Ganti jadi '1'
+            
+            await sleep(1000);
+            countdownEl.style.display = 'none';  // Sembunyikan hitung mundur
+
+            // --- SEKUENS TEKS "You Are My Love" ---
+            await sleep(500);
+            msgYou.style.display = 'block';
+            await sleep(1000);
+            msgYou.style.display = 'none';
+
+            msgAre.style.display = 'block';
+            await sleep(1000);
+            msgAre.style.display = 'none';
+
+            msgMy.style.display = 'block';
+            await sleep(1000);
+            msgMy.style.display = 'none';
+
+            msgLove.style.display = 'block';
+            await sleep(1000);
+            msgLove.style.display = 'none';
+
+            // --- SEKUENS AKHIR (PULSING HEART) ---
+            await sleep(500);
+            finalHeart.style.display = 'flex';
+        }
+
+        // Jalankan urutan animasi saat halaman web dimuat
+        window.onload = startAnimationSequence;
+    </script>
+</body>
+</html>
