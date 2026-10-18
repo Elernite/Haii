@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Neon Dot Love</title>
+    <title>Matrix Pixel Genuine Love</title>
     
-    <!-- Memanggil Google Font Dot-Matrix Piksel Asli -->
+    <!-- Google Font Piksel / Dot Digital Asli -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -28,7 +28,6 @@
             z-index: 1;
         }
 
-        /* Kontainer teks utama di tengah layar */
         #content-layer {
             position: absolute;
             top: 50%;
@@ -40,19 +39,26 @@
             width: 100%;
         }
 
-        /* Menggunakan font Press Start 2P (Kumpulan titik digital) */
+        /* PERBAIKAN: Memaksa teks menggunakan font piksel tanpa penghalusan browser */
         .matrix-glow-text {
-            font-family: 'Press Start 2P', monospace;
-            font-size: 5rem;
+            font-family: 'Press Start 2P', monospace !important;
+            font-size: 4.8rem;
             color: #ffffff;
             display: none;
-            line-height: 1.4;
-            /* Efek pendaran neon pink pekat menyelimuti bentuk piksel titiknya */
+            margin: 0;
+            padding: 0;
+            /* Mematikan fitur smooth-font browser agar tetap kotak digital tajam */
+            image-rendering: pixelated;
+            font-smooth: never;
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: none;
+            
+            /* Efek pancaran pendaran LED monitor video */
             text-shadow: 
                 0 0 10px #ffffff, 
-                0 0 25px #ff007f, 
-                0 0 50px #ff007f, 
-                0 0 80px #ff007f;
+                0 0 20px #ff007f, 
+                0 0 45px #ff007f, 
+                0 0 70px #ff007f;
             animation: monitorBlink 0.8s infinite alternate;
         }
 
@@ -61,7 +67,7 @@
             100% { transform: scale(1.04); opacity: 1; }
         }
 
-        /* Desain adegan akhir: Hati piksel digital terstruktur & teks sayang */
+        /* Desain akhir hati piksel dari karakter */
         #final-love-scene {
             display: none;
             font-family: 'Courier New', Courier, monospace;
@@ -84,23 +90,22 @@
 </head>
 <body>
 
-    <!-- Canvas Efek Hujan Teks "I LOVE YOU ❤️" -->
+    <!-- Efek Hujan Teks Matrix "I LOVE YOU ❤️" -->
     <canvas id="matrixCanvas"></canvas>
 
-    <!-- Kontainer Teks Tengah Kumpulan Titik Digital -->
+    <!-- Kontainer Teks Tengah Piksel Murni -->
     <div id="content-layer">
-        <!-- Urutan Hitung Mundur Berbentuk Piksel -->
-        <div id="num3" class="matrix-glow-text">3</div>
-        <div id="num2" class="matrix-glow-text">2</div>
-        <div id="num1" class="matrix-glow-text">1</div>
+        <!-- PERBAIKAN: Mengubah menjadi elemen <pre> agar browser membacanya sebagai format blok dot/piksel mentah -->
+        <pre id="num3" class="matrix-glow-text">3</pre>
+        <pre id="num2" class="matrix-glow-text">2</pre>
+        <pre id="num1" class="matrix-glow-text">1</pre>
         
-        <!-- Urutan Kalimat Pembuka Berbentuk Piksel -->
-        <div id="txtYou" class="matrix-glow-text">You</div>
-        <div id="txtAre" class="matrix-glow-text">Are</div>
-        <div id="txtMy" class="matrix-glow-text">My</div>
-        <div id="txtLove" class="matrix-glow-text">Love</div>
+        <pre id="txtYou" class="matrix-glow-text">You</pre>
+        <pre id="txtAre" class="matrix-glow-text">Are</pre>
+        <pre id="txtMy" class="matrix-glow-text">My</pre>
+        <pre id="txtLove" class="matrix-glow-text">Love</pre>
 
-        <!-- Hati Piksel Digital Tengah Akhir (Teks preformatted) -->
+        <!-- Struktur Hati Piksel Akhir -->
         <pre id="final-love-scene">
     00000       00000    
   000000000   000000000  
@@ -117,7 +122,7 @@
     </div>
 
     <script>
-        // --- 1. LOGIKA BACKGROUND MATRIX RAIN "I LOVE YOU ❤️" ---
+        // --- 1. LOGIKA BACKGROUND RAIN MATRIX "I LOVE YOU ❤️" ---
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -142,7 +147,6 @@
             ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Warna hujan pink tua teredam agar teks tengah menonjol tajam
             ctx.fillStyle = '#660033'; 
             ctx.font = 'bold ' + fontSize + 'px monospace';
 
@@ -171,14 +175,12 @@
             canvas.height = window.innerHeight;
         });
 
-
-        // --- 2. LOGIKA SEKUENS WAKTU (TIMELINE PER KATA) ---
+        // --- 2. LOGIKA URUTAN TIMELINE KATA MUNCUL ---
         const delayTime = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         async function startLoveSequence() {
-            const step = 950; // Durasi ketukan perpindahan per kata
+            const step = 950; 
 
-            // Hitung Mundur 3, 2, 1
             await delayTime(500);
             document.getElementById('num3').style.display = 'block';
             await delayTime(step);
@@ -192,7 +194,6 @@
             await delayTime(step);
             document.getElementById('num1').style.display = 'none';
 
-            // You Are My Love
             document.getElementById('txtYou').style.display = 'block';
             await delayTime(step);
             document.getElementById('txtYou').style.display = 'none';
@@ -209,7 +210,6 @@
             await delayTime(step);
             document.getElementById('txtLove').style.display = 'none';
 
-            // Hati Piksel "I LOVE ❤ SAYANG"
             await delayTime(300);
             document.getElementById('final-love-scene').style.display = 'block';
         }
