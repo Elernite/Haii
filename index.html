@@ -58,7 +58,7 @@
 
                 ctx.fillText(text, x, y);
 
-                matrixCharIndices[i] = (charIndices => (charIndices + 1) % matrixChars.length)(matrixCharIndices[i]);
+                matrixCharIndices[i] = (matrixCharIndices[i] + 1) % matrixChars.length;
                 if (y > canvas.height && Math.random() > 0.975) {
                     matrixDrops[i] = 0;
                 }
@@ -73,7 +73,7 @@
             "1": ["   ●●   ", "  ●●●   ", "   ●●   ", "   ●●   ", "   ●●   ", "   ●●   ", "  ●●●●  "],
             "You": ["●  ●  ●●●  ●  ●", "●  ● ●   ● ●  ●", " ●●  ●   ● ●  ●", "  ●  ●   ● ●  ●", "  ●  ●   ● ●  ●", "  ●   ●●●   ●●  "],
             "Are": ["  ●●   ●●●  ●●●●", " ●  ●  ●  ● ●   ", "●    ● ●●●  ●●● ", "●●●●●● ●  ● ●   ", "●    ● ●  ● ●   ", "●    ● ●  ● ●●●●"],
-            "My":  ["●   ● ●  ●", "●● ●● ●  ●", "● ● ●  ●● ", "●   ●  ●  ", "●   ●  •  ", "●   ●  ●  "],
+            "My":  ["●   ● ●  ●", "●● ●● ●  ●", "● ● ●  ●● ", "●   ●  ●  ", "●   ●  ●  ", "●   ●  ●  "],
             "Love": ["●     ●●●  ●  ● ●●●●", "●    ●   ● ●  ● ●   ", "●    ●   ●  ●●  ●●● ", "●    ●   ●  ●●  ●   ", "●●●●  ●●●    ●  ●●●●"],
             "Heart": [
                 "  ●●●●   ●●●●  ",
@@ -88,13 +88,19 @@
             ]
         };
 
-        // PERBAIKAN MUTLAK: Logika kalkulasi lebar kolom (cols) yang fleksibel agar tidak melempar objek keluar layar
+        // PERBAIKAN: Menghitung lebar kolom secara dinamis berdasarkan baris terpanjang
         function getSceneCoordinates(matrix, scale = 14) {
             const coords = [];
             const rows = matrix.length;
-            const cols = matrix[0].length; // Membaca panjang baris pertama dengan tepat
+            let maxCols = 0;
             
-            const startX = (canvas.width - cols * scale) / 2;
+            for (let r = 0; r < rows; r++) {
+                if (matrix[r].length > maxCols) {
+                    maxCols = matrix[r].length;
+                }
+            }
+            
+            const startX = (canvas.width - maxCols * scale) / 2;
             const startY = (canvas.height - rows * scale) / 2;
 
             for (let r = 0; r < rows; r++) {
@@ -112,11 +118,12 @@
 
         // --- 3. CLASS ENGINE PARTIKEL INDIVIDUAL ---
         class LedParticle {
-            constructor(x, y) {
+            constructor() {
+                // PERBAIKAN: Partikel lahir di posisi tengah layar acak agar aman dari pembagian nol (0)
                 this.x = Math.random() * canvas.width;  
                 this.y = Math.random() * canvas.height;
-                this.targetX = x;
-                this.targetY = y;
+                this.targetX = this.x;
+                this.targetY = this.y;
                 this.vx = 0;
                 this.vy = 0;
                 this.radius = 4.5; 
@@ -142,7 +149,7 @@
                     this.x += this.vx + jiggleX;
                     this.y += this.vy + jiggleY;
                 } else {
-                    // EFEK TRANSISI: Fisika gerak meluncur perpindahan tempat dari angka 3, ke 2, ke 1
+                    // EFEK TRANSISI: Gerak meluncur perpindahan tempat dari angka 3, ke 2, ke 1
                     this.vx += (this.targetX - this.x) * this.speedMultiplier;
                     this.vy += (this.targetY - this.y) * this.speedMultiplier;
                     this.vx *= this.friction;
@@ -163,17 +170,17 @@
             }
         }
 
+        // Amankan penampung partikel mandiri
         const particles = [];
-        const initialCoords = getSceneCoordinates(scenes["3"], 18);
-        for (let i = 0; i < 450; i++) {
-            const coord = initialCoords[i % initialCoords.length];
-            particles.push(new LedParticle(coord.x, coord.y));
+        for (let i = 0; i < 400; i++) {
+            particles.push(new LedParticle());
         }
 
         function transitionToScene(sceneName, isFinal = false, scaleSize = 15) {
             const targetCoords = getSceneCoordinates(scenes[sceneName], scaleSize);
-            const totalTargets = targetCoords.length;
+            if (targetCoords.length === 0) return;
 
+            const totalTargets = targetCoords.length;
             particles.forEach((p, idx) => {
                 const target = targetCoords[idx % totalTargets];
                 p.updateTarget(target.x, target.y, isFinal);
@@ -208,6 +215,7 @@
         const stepDuration = 1000; 
 
         async function startTimelineFlow() {
+            // Pemicu awal gerakan pembentukan adegan pertama
             transitionToScene("3", false, 18);
             
             while (currentTimelineIndex < timeline.length - 1) {
@@ -226,6 +234,7 @@
             }
         }
 
+        // Jalankan sistem secara sekuensial setelah window siap
         window.onload = () => {
             startTimelineFlow();
             requestAnimationFrame(mainLoop);
