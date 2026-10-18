@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix I Love You Rain</title>
+    <title>Matrix Pixel Love</title>
     <style>
         body, html {
             margin: 0;
@@ -23,7 +23,7 @@
             z-index: 1;
         }
 
-        /* Lapisan konten teks di tengah */
+        /* Lapisan konten teks utama di tengah layar */
         #content-layer {
             position: absolute;
             top: 50%;
@@ -34,49 +34,47 @@
             pointer-events: none;
         }
 
-        /* Gaya font teks utama dengan pendaran neon pink */
+        /* Gaya teks utama: Font piksel monospace tebal dengan efek pendaran LED video */
         .matrix-glow-text {
-            font-size: 6rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 6.5rem;
             font-weight: 900;
             color: #ffffff;
             display: none;
-            letter-spacing: 3px;
+            letter-spacing: -2px;
+            /* Efek pendaran warna pink neon tebal seperti di video */
             text-shadow: 
-                0 0 10px #fff, 
+                0 0 10px #ffffff, 
                 0 0 20px #ff007f, 
                 0 0 40px #ff007f, 
                 0 0 60px #ff007f;
-            animation: pulseEffect 0.8s infinite alternate;
+            animation: monitorBlink 0.8s infinite alternate;
         }
 
-        @keyframes pulseEffect {
-            0% { transform: scale(0.95); opacity: 0.85; }
-            100% { transform: scale(1.05); opacity: 1; }
+        @keyframes monitorBlink {
+            0% { transform: scale(0.97); opacity: 0.9; }
+            100% { transform: scale(1.03); opacity: 1; }
         }
 
-        /* Gaya khusus untuk adegan hati digital terakhir */
+        /* Gaya khusus adegan akhir: Hati piksel digital & teks sayang */
         #final-love-scene {
             display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            animation: pulseEffect 0.6s infinite alternate;
-        }
-
-        .digital-heart {
-            font-size: 9rem;
-            color: #ff007f;
-            filter: drop-shadow(0 0 20px #ff007f);
-            line-height: 1;
-            margin-bottom: 15px;
-        }
-
-        .sub-message {
-            font-size: 2.2rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.6rem;
             font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
-            letter-spacing: 1px;
+            color: #ff3399;
+            line-height: 1.2;
+            /* Warna pendaran pink pekat untuk struktur hati */
+            text-shadow: 
+                0 0 5px #ff3399, 
+                0 0 15px #ff007f, 
+                0 0 30px #ff007f;
+            animation: pulseHeart 0.8s infinite alternate;
+        }
+
+        @keyframes pulseHeart {
+            0% { transform: scale(0.95); filter: brightness(0.9); }
+            100% { transform: scale(1.05); filter: brightness(1.2); }
         }
     </style>
 </head>
@@ -85,61 +83,66 @@
     <!-- Canvas Efek Hujan Teks "I LOVE YOU ❤️" -->
     <canvas id="matrixCanvas"></canvas>
 
-    <!-- Kontainer Teks Utama -->
+    <!-- Kontainer Teks Tengah yang Sama Persis -->
     <div id="content-layer">
-        <!-- Hitung Mundur -->
+        <!-- Urutan Hitung Mundur -->
         <div id="num3" class="matrix-glow-text">3</div>
         <div id="num2" class="matrix-glow-text">2</div>
         <div id="num1" class="matrix-glow-text">1</div>
         
-        <!-- Kalimat Pembuka -->
+        <!-- Urutan Kalimat -->
         <div id="txtYou" class="matrix-glow-text">You</div>
         <div id="txtAre" class="matrix-glow-text">Are</div>
         <div id="txtMy" class="matrix-glow-text">My</div>
         <div id="txtLove" class="matrix-glow-text">Love</div>
 
-        <!-- Adegan Akhir: Emot Love Besar & Tulisan Sayang -->
-        <div id="final-love-scene">
-            <div class="digital-heart">❤️</div>
-            <div class="sub-message">I Love You Sayang</div>
-        </div>
+        <!-- Bentuk Hati Piksel Digital Tengah Akhir (Persis seperti Video) -->
+        <pre id="final-love-scene">
+    00000       00000    
+  000000000   000000000  
+ 00000000000 00000000000 
+0000000000000000000000000
+0000                  000
+000  I LOVE ❤ SAYANG  000
+ 000                000  
+  00000          00000   
+    000000    000000     
+       0000000000        
+          0000           
+        </pre>
     </div>
 
     <script>
-        // --- 1. LOGIKA HUJAN MATRIX "I LOVE YOU ❤️" ---
+        // --- 1. CODE LOGIKA HUJAN MATRIX "I LOVE YOU ❤️" ---
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Kalimat yang akan mengalir ke bawah
         const matrixString = "I LOVE YOU ❤️ ";
         const matrixChars = matrixString.split("");
 
         const fontSize = 18;
         const columns = canvas.width / fontSize;
 
-        // Menyimpan posisi vertikal (Y) dan indeks karakter saat ini untuk setiap kolom
         const drops = [];
         const charIndices = [];
 
         for (let x = 0; x < columns; x++) {
-            drops[x] = Math.random() * -100; // Mulai dari atas layar secara acak
-            charIndices[x] = Math.floor(Math.random() * matrixChars.length); // Indek awal kalimat acak
+            drops[x] = Math.random() * -100;
+            charIndices[x] = Math.floor(Math.random() * matrixChars.length);
         }
 
         function drawMatrix() {
-            // Efek jejak memudar hitam
             ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Warna hujan teks (Pink neon redup agar teks tengah menonjol)
-            ctx.fillStyle = '#99004c'; 
+            // Warna hujan pink redup agar tidak menabrak teks putih di tengah
+            ctx.fillStyle = '#660033'; 
             ctx.font = 'bold ' + fontSize + 'px monospace';
 
             for (let i = 0; i < columns; i++) {
-                // Ambil karakter berurutan berdasarkan indeks kolom masing-masing
                 const charIndex = charIndices[i];
                 const text = matrixChars[charIndex];
 
@@ -148,10 +151,8 @@
 
                 ctx.fillText(text, x, y);
 
-                // Jalankan urutan kalimatnya ke karakter berikutnya
                 charIndices[i] = (charIndices[i] + 1) % matrixChars.length;
 
-                // Jika hujan sudah melewati bawah layar, reset ke atas secara acak
                 if (y > canvas.height && Math.random() > 0.975) {
                     drops[i] = 0;
                 }
@@ -167,13 +168,13 @@
         });
 
 
-        // --- 2. LOGIKA URUTAN WAKTU TIMELINE ---
+        // --- 2. CODE URUTAN TIMELINE KATA (PERSIS VIDEO) ---
         const delayTime = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         async function startLoveSequence() {
-            const step = 950; // Kecepatan transisi teks
+            const step = 950; // Durasi ketukan perpindahan per kata
 
-            // Sesi Hitung Mundur
+            // Fase 1: 3, 2, 1
             await delayTime(500);
             document.getElementById('num3').style.display = 'block';
             await delayTime(step);
@@ -187,7 +188,7 @@
             await delayTime(step);
             document.getElementById('num1').style.display = 'none';
 
-            // Sesi Teks Kata demi Kata
+            // Fase 2: You Are My Love
             document.getElementById('txtYou').style.display = 'block';
             await delayTime(step);
             document.getElementById('txtYou').style.display = 'none';
@@ -204,9 +205,9 @@
             await delayTime(step);
             document.getElementById('txtLove').style.display = 'none';
 
-            // Sesi Akhir: Emot Love Berkedip & Pesan
+            // Fase 3: Hati Piksel "I LOVE ❤ SAYANG"
             await delayTime(300);
-            document.getElementById('final-love-scene').style.display = 'flex';
+            document.getElementById('final-love-scene').style.display = 'block';
         }
 
         window.onload = startLoveSequence;
