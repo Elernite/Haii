@@ -13,7 +13,6 @@
             overflow: hidden;
             background-color: #000000;
         }
-        /* Seluruh elemen visual disatukan dalam satu kanvas grafis interaktif */
         canvas {
             display: block;
             position: absolute;
@@ -32,7 +31,6 @@
         const canvas = document.getElementById('loveCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Menyesuaikan resolusi layar internal canvas
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -50,7 +48,7 @@
         function drawMatrixBackground() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#4d0026'; // Warna pink gelap redup di latar belakang
+            ctx.fillStyle = '#4d0026'; 
             ctx.font = 'bold ' + matrixFontSize + 'px monospace';
 
             for (let i = 0; i < matrixColumns; i++) {
@@ -60,7 +58,7 @@
 
                 ctx.fillText(text, x, y);
 
-                matrixCharIndices[i] = (matrixCharIndices[i] + 1) % matrixChars.length;
+                matrixCharIndices[i] = (charIndices => (charIndices + 1) % matrixChars.length)(matrixCharIndices[i]);
                 if (y > canvas.height && Math.random() > 0.975) {
                     matrixDrops[i] = 0;
                 }
@@ -68,15 +66,14 @@
             }
         }
 
-        // --- 2. STRUKTUR TEKS DOT LED & MAP KOORDINAT PARTIKEL ---
-        // Kumpulan cetakan bentuk piksel manual untuk animasi berpindah tempat
+        // --- 2. STRUKTUR TEKS DOT LED ---
         const scenes = {
             "3": ["  ●●●●  ", " ●    ● ", "      ● ", "   ●●●  ", "      ● ", " ●    ● ", "  ●●●●  "],
             "2": ["  ●●●●  ", " ●    ● ", "     ●  ", "   ●    ", "  ●     ", " ●      ", " ●●●●●● "],
             "1": ["   ●●   ", "  ●●●   ", "   ●●   ", "   ●●   ", "   ●●   ", "   ●●   ", "  ●●●●  "],
             "You": ["●  ●  ●●●  ●  ●", "●  ● ●   ● ●  ●", " ●●  ●   ● ●  ●", "  ●  ●   ● ●  ●", "  ●  ●   ● ●  ●", "  ●   ●●●   ●●  "],
             "Are": ["  ●●   ●●●  ●●●●", " ●  ●  ●  ● ●   ", "●    ● ●●●  ●●● ", "●●●●●● ●  ● ●   ", "●    ● ●  ● ●   ", "●    ● ●  ● ●●●●"],
-            "My":  ["●   ● ●  ●", "●● ●● ●  ●", "● ● ●  ●● ", "●   ●  ●  ", "●   ●  ●  ", "●   ●  ●  "],
+            "My":  ["●   ● ●  ●", "●● ●● ●  ●", "● ● ●  ●● ", "●   ●  ●  ", "●   ●  •  ", "●   ●  ●  "],
             "Love": ["●     ●●●  ●  ● ●●●●", "●    ●   ● ●  ● ●   ", "●    ●   ●  ●●  ●●● ", "●    ●   ●  ●●  ●   ", "●●●●  ●●●    ●  ●●●●"],
             "Heart": [
                 "  ●●●●   ●●●●  ",
@@ -91,17 +88,17 @@
             ]
         };
 
-        // Fungsi untuk mengekstrak matriks cetakan di atas menjadi titik koordinat X dan Y nyata di tengah layar
+        // PERBAIKAN MUTLAK: Logika kalkulasi lebar kolom (cols) yang fleksibel agar tidak melempar objek keluar layar
         function getSceneCoordinates(matrix, scale = 14) {
             const coords = [];
             const rows = matrix.length;
-            const cols = matrix[0].length;
+            const cols = matrix[0].length; // Membaca panjang baris pertama dengan tepat
             
             const startX = (canvas.width - cols * scale) / 2;
             const startY = (canvas.height - rows * scale) / 2;
 
             for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
+                for (let c = 0; c < matrix[r].length; c++) {
                     if (matrix[r][c] === '●') {
                         coords.push({
                             x: startX + c * scale,
@@ -116,14 +113,14 @@
         // --- 3. CLASS ENGINE PARTIKEL INDIVIDUAL ---
         class LedParticle {
             constructor(x, y) {
-                this.x = Math.random() * canvas.width;  // Lahir di posisi acak sembarang tempat
+                this.x = Math.random() * canvas.width;  
                 this.y = Math.random() * canvas.height;
                 this.targetX = x;
                 this.targetY = y;
                 this.vx = 0;
                 this.vy = 0;
-                this.radius = 4.5; // Ukuran bulatan dot lampu besar LED
-                this.speedMultiplier = 0.08; // Kecepatan perpindahan meluncur
+                this.radius = 4.5; 
+                this.speedMultiplier = 0.08; 
                 this.friction = 0.85;
                 this.isFinalScene = false;
             }
@@ -136,11 +133,10 @@
 
             update() {
                 if (this.isFinalScene) {
-                    // EFEK AKHIR: Dot menyebar random tipis dan bergetar (jiggle) aktif di tempatnya
+                    // EFEK AKHIR: Dot menyebar acak tipis dan bergetar (jiggle) aktif di tempatnya
                     const jiggleX = (Math.random() - 0.5) * 3.5;
                     const jiggleY = (Math.random() - 0.5) * 3.5;
                     
-                    // Tarikan menuju target dibuat sangat lentur + getaran konstan
                     this.vx += (this.targetX - this.x) * 0.02;
                     this.vy += (this.targetY - this.y) * 0.02;
                     this.x += this.vx + jiggleX;
@@ -159,50 +155,40 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                
-                // Efek pancaran pendaran cahaya neon pink menyala pekat pada setiap partikel dot
                 ctx.fillStyle = '#ffffff';
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = '#ff007f';
                 ctx.fill();
-                
-                // Reset efek shadow agar tidak merusak grafis lain
                 ctx.shadowBlur = 0; 
             }
         }
 
-        // Pembuatan pool partikel awal (menggunakan kuota maksimal agar bentuk objek padat)
         const particles = [];
-        const initialCoords = getSceneCoordinates(scenes["3"], 15);
-        for (let i = 0; i < 400; i++) {
+        const initialCoords = getSceneCoordinates(scenes["3"], 18);
+        for (let i = 0; i < 450; i++) {
             const coord = initialCoords[i % initialCoords.length];
             particles.push(new LedParticle(coord.x, coord.y));
         }
 
-        // Fungsi mencocokkan partikel aktif dengan bentuk scene baru
         function transitionToScene(sceneName, isFinal = false, scaleSize = 15) {
             const targetCoords = getSceneCoordinates(scenes[sceneName], scaleSize);
             const totalTargets = targetCoords.length;
 
             particles.forEach((p, idx) => {
                 const target = targetCoords[idx % totalTargets];
-                // Suntikkan koordinat baru, partikel otomatis meluncur berpindah arah
                 p.updateTarget(target.x, target.y, isFinal);
             });
         }
 
         // --- 4. CORE ENGINE LOOP ANIMASI ---
         function mainLoop() {
-            // Draw background matrix rain biner dahulu
             drawMatrixBackground();
 
-            // Render dan update semua partikel lampu LED besar
             particles.forEach(particle => {
                 particle.update();
                 particle.draw();
             });
 
-            // Jika di adegan akhir, gambar teks tambahan "I LOVE YOU SAYANG" di bawah hati yang bergetar
             if (currentTimelineIndex === 7) {
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 24px Courier New';
@@ -216,13 +202,12 @@
             requestAnimationFrame(mainLoop);
         }
 
-        // --- 5. MANAGEMENT TIMELINE SEKUENS WAKTU (Otomatis Jalur Alir) ---
+        // --- 5. TIMELINE FLOW CONTROLLER ---
         let currentTimelineIndex = 0;
         const timeline = ["3", "2", "1", "You", "Are", "My", "Love", "Heart"];
-        const stepDuration = 1000; // Tempo perpindahan adegan (1 detik)
+        const stepDuration = 1000; 
 
         async function startTimelineFlow() {
-            // Tampilkan adegan awal (Angka 3)
             transitionToScene("3", false, 18);
             
             while (currentTimelineIndex < timeline.length - 1) {
@@ -232,5 +217,27 @@
                 const nextScene = timeline[currentTimelineIndex];
                 
                 if (nextScene === "Heart") {
-                    // Pindah ke adegan hati akhir: aktifkan parameter gerak acak menyebar & getar di tempat (isFinal = true)
                     transitionToScene("Heart", true, 16);
+                } else if (nextScene === "You" || nextScene === "Are" || nextScene === "My" || nextScene === "Love") {
+                    transitionToScene(nextScene, false, 14);
+                } else {
+                    transitionToScene(nextScene, false, 18);
+                }
+            }
+        }
+
+        window.onload = () => {
+            startTimelineFlow();
+            requestAnimationFrame(mainLoop);
+        };
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            const currentScene = timeline[currentTimelineIndex];
+            const isFinal = (currentScene === "Heart");
+            const scale = (currentScene === "Heart") ? 16 : 15;
+            transitionToScene(currentScene, isFinal, scale);
+        });
+    </script>
+</body>
+</html>
