@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Digital Love Effect</title>
+    <title>Matrix I Love You Rain</title>
     <style>
-        /* --- CSS STYLING --- */
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: black;
+            background-color: #000000;
             font-family: 'Courier New', Courier, monospace;
         }
 
@@ -24,182 +23,193 @@
             z-index: 1;
         }
 
-        /* Kontainer Utama untuk Teks di Tengah */
-        #overlay-container {
+        /* Lapisan konten teks di tengah */
+        #content-layer {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2;
             text-align: center;
+            pointer-events: none;
+        }
+
+        /* Gaya font teks utama dengan pendaran neon pink */
+        .matrix-glow-text {
+            font-size: 6rem;
+            font-weight: 900;
             color: #ffffff;
-            pointer-events: none; /* Supaya tidak mengganggu klik */
-        }
-
-        /* Gaya Teks Digital Besar (Gaya Dot Matrix) */
-        .digital-text {
-            font-size: 5rem;
-            font-weight: bold;
-            text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff1493;
-            letter-spacing: 5px;
             display: none;
-            animation: pulse 1s infinite alternate;
+            letter-spacing: 3px;
+            text-shadow: 
+                0 0 10px #fff, 
+                0 0 20px #ff007f, 
+                0 0 40px #ff007f, 
+                0 0 60px #ff007f;
+            animation: pulseEffect 0.8s infinite alternate;
         }
 
-        /* Efek Berkedip untuk Teks Akhir dan Hati */
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.8; }
+        @keyframes pulseEffect {
+            0% { transform: scale(0.95); opacity: 0.85; }
             100% { transform: scale(1.05); opacity: 1; }
         }
 
-        /* Gaya Khusus untuk Animasi Hati Akhir */
-        .heart-container {
+        /* Gaya khusus untuk adegan hati digital terakhir */
+        #final-love-scene {
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            animation: pulse 0.8s infinite alternate;
+            animation: pulseEffect 0.6s infinite alternate;
         }
 
-        .heart-shape {
-            font-size: 8rem;
-            color: #ff1493;
-            filter: drop-shadow(0 0 15px #ff69b4);
-            margin-bottom: 10px;
+        .digital-heart {
+            font-size: 9rem;
+            color: #ff007f;
+            filter: drop-shadow(0 0 20px #ff007f);
+            line-height: 1;
+            margin-bottom: 15px;
         }
 
-        .love-message {
-            font-size: 2rem;
-            color: #fff;
+        .sub-message {
+            font-size: 2.2rem;
             font-weight: bold;
-            text-shadow: 0 0 10px #ff1493;
+            color: #ffffff;
+            text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Canvas untuk Background Efek Matrix -->
+    <!-- Canvas Efek Hujan Teks "I LOVE YOU ❤️" -->
     <canvas id="matrixCanvas"></canvas>
 
-    <!-- Kontainer Teks dan Animasi -->
-    <div id="overlay-container">
-        <!-- Tahap 1: Hitung Mundur -->
-        <div id="countdown" class="digital-text">3</div>
+    <!-- Kontainer Teks Utama -->
+    <div id="content-layer">
+        <!-- Hitung Mundur -->
+        <div id="num3" class="matrix-glow-text">3</div>
+        <div id="num2" class="matrix-glow-text">2</div>
+        <div id="num1" class="matrix-glow-text">1</div>
         
-        <!-- Tahap 2: Pesan Berjalan -->
-        <div id="msg-you" class="digital-text">You</div>
-        <div id="msg-are" class="digital-text">Are</div>
-        <div id="msg-my" class="digital-text">My</div>
-        <div id="msg-love" class="digital-text">Love</div>
+        <!-- Kalimat Pembuka -->
+        <div id="txtYou" class="matrix-glow-text">You</div>
+        <div id="txtAre" class="matrix-glow-text">Are</div>
+        <div id="txtMy" class="matrix-glow-text">My</div>
+        <div id="txtLove" class="matrix-glow-text">Love</div>
 
-        <!-- Tahap 3: Hati & Pesan Akhir -->
-        <div id="final-heart" class="heart-container">
-            <div class="heart-shape">❤️</div>
-            <div class="love-message">I Love You Sayang ~</div>
+        <!-- Adegan Akhir: Emot Love Besar & Tulisan Sayang -->
+        <div id="final-love-scene">
+            <div class="digital-heart">❤️</div>
+            <div class="sub-message">I Love You Sayang</div>
         </div>
     </div>
 
-    <!-- --- JAVASCRIPT LOGIC --- -->
     <script>
-        // --- 1. CONFIG BACKGROUND MATRIX ---
+        // --- 1. LOGIKA HUJAN MATRIX "I LOVE YOU ❤️" ---
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Karakter digital yang mengalir (menggunakan angka biner & romawi/acak mirip video)
-        const katakana = "010101010101010101010101010101001100XXYYZZ";
-        const alphabet = katakana.split("");
+        // Kalimat yang akan mengalir ke bawah
+        const matrixString = "I LOVE YOU ❤️ ";
+        const matrixChars = matrixString.split("");
 
-        const fontSize = 16;
+        const fontSize = 18;
         const columns = canvas.width / fontSize;
 
-        const rainDrops = [];
+        // Menyimpan posisi vertikal (Y) dan indeks karakter saat ini untuk setiap kolom
+        const drops = [];
+        const charIndices = [];
+
         for (let x = 0; x < columns; x++) {
-            rainDrops[x] = 1;
+            drops[x] = Math.random() * -100; // Mulai dari atas layar secara acak
+            charIndices[x] = Math.floor(Math.random() * matrixChars.length); // Indek awal kalimat acak
         }
 
         function drawMatrix() {
-            // Memberikan efek shadow/trail hitam transparan
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            // Efek jejak memudar hitam
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Warna teks matrix (merah muda/pink keunguan seperti di video)
-            ctx.fillStyle = '#ff1493'; 
-            ctx.font = fontSize + 'px monospace';
+            // Warna hujan teks (Pink neon redup agar teks tengah menonjol)
+            ctx.fillStyle = '#99004c'; 
+            ctx.font = 'bold ' + fontSize + 'px monospace';
 
-            for (let i = 0; i < rainDrops.length; i++) {
-                const text = alphabet[Math.floor(Math.random() * alphabet.length)];
-                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+            for (let i = 0; i < columns; i++) {
+                // Ambil karakter berurutan berdasarkan indeks kolom masing-masing
+                const charIndex = charIndices[i];
+                const text = matrixChars[charIndex];
 
-                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    rainDrops[i] = 0;
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+
+                ctx.fillText(text, x, y);
+
+                // Jalankan urutan kalimatnya ke karakter berikutnya
+                charIndices[i] = (charIndices[i] + 1) % matrixChars.length;
+
+                // Jika hujan sudah melewati bawah layar, reset ke atas secara acak
+                if (y > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
                 }
-                rainDrops[i]++;
+                drops[i]++;
             }
         }
 
-        // Jalankan background matrix secara konstan
-        setInterval(drawMatrix, 30);
+        setInterval(drawMatrix, 40);
 
-        // Menyesuaikan ukuran jika window browser di-resize
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
 
 
-        // --- 2. LOGIKA ANIMASI SEKUENSAL (TIMELINE CHANGER) ---
-        const countdownEl = document.getElementById('countdown');
-        const msgYou = document.getElementById('msg-you');
-        const msgAre = document.getElementById('msg-are');
-        const msgMy = document.getElementById('msg-my');
-        const msgLove = document.getElementById('msg-love');
-        const finalHeart = document.getElementById('final-heart');
+        // --- 2. LOGIKA URUTAN WAKTU TIMELINE ---
+        const delayTime = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // Fungsi pembantu untuk delay waktu (milidetik)
-        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        async function startLoveSequence() {
+            const step = 950; // Kecepatan transisi teks
 
-        async function startAnimationSequence() {
-            // --- HITUNG MUNDUR (3, 2, 1) ---
-            await sleep(1000);
-            countdownEl.style.display = 'block'; // Tampilkan '3'
-            
-            await sleep(1000);
-            countdownEl.innerText = '2';         // Ganti jadi '2'
-            
-            await sleep(1000);
-            countdownEl.innerText = '1';         // Ganti jadi '1'
-            
-            await sleep(1000);
-            countdownEl.style.display = 'none';  // Sembunyikan hitung mundur
+            // Sesi Hitung Mundur
+            await delayTime(500);
+            document.getElementById('num3').style.display = 'block';
+            await delayTime(step);
+            document.getElementById('num3').style.display = 'none';
 
-            // --- SEKUENS TEKS "You Are My Love" ---
-            await sleep(500);
-            msgYou.style.display = 'block';
-            await sleep(1000);
-            msgYou.style.display = 'none';
+            document.getElementById('num2').style.display = 'block';
+            await delayTime(step);
+            document.getElementById('num2').style.display = 'none';
 
-            msgAre.style.display = 'block';
-            await sleep(1000);
-            msgAre.style.display = 'none';
+            document.getElementById('num1').style.display = 'block';
+            await delayTime(step);
+            document.getElementById('num1').style.display = 'none';
 
-            msgMy.style.display = 'block';
-            await sleep(1000);
-            msgMy.style.display = 'none';
+            // Sesi Teks Kata demi Kata
+            document.getElementById('txtYou').style.display = 'block';
+            await delayTime(step);
+            document.getElementById('txtYou').style.display = 'none';
 
-            msgLove.style.display = 'block';
-            await sleep(1000);
-            msgLove.style.display = 'none';
+            document.getElementById('txtAre').style.display = 'block';
+            await delayTime(step);
+            document.getElementById('txtAre').style.display = 'none';
 
-            // --- SEKUENS AKHIR (PULSING HEART) ---
-            await sleep(500);
-            finalHeart.style.display = 'flex';
+            document.getElementById('txtMy').style.display = 'block';
+            await delayTime(step);
+            document.getElementById('txtMy').style.display = 'none';
+
+            document.getElementById('txtLove').style.display = 'block';
+            await delayTime(step);
+            document.getElementById('txtLove').style.display = 'none';
+
+            // Sesi Akhir: Emot Love Berkedip & Pesan
+            await delayTime(300);
+            document.getElementById('final-love-scene').style.display = 'flex';
         }
 
-        // Jalankan urutan animasi saat halaman web dimuat
-        window.onload = startAnimationSequence;
+        window.onload = startLoveSequence;
     </script>
 </body>
 </html>
